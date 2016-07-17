@@ -5,6 +5,7 @@ from flask_googlemaps import GoogleMaps
 from flask_googlemaps import Map, icons
 
 import requests
+import polyline as pl
 
 
 app = Flask(__name__, template_folder="templates")
@@ -23,10 +24,12 @@ def coord_to_str(coord):
 
 def waypoints_to_str(waypoints):
     waypoints_str = "optimize:true"
+
     for waypoint in waypoints:
         waypoints_str += "|" + coord_to_str(waypoint)
 
-
+    print(waypoints_str)
+    return waypoints_str
 
 @app.route("/")
 def mapview():
@@ -158,36 +161,13 @@ def mapview():
         ]
     )
 
-    polyline = {
-        'stroke_color': '#0AB0DE',
-        'stroke_opacity': 1.0,
-        'stroke_weight': 3,
-        'path': [{'lat': 33.678, 'lng': -116.243},
-                 {'lat': 33.679, 'lng': -116.244},
-                 {'lat': 33.680, 'lng': -116.250},
-                 {'lat': 33.681, 'lng': -116.239},
-                 {'lat': 33.678, 'lng': -116.243}]
-    }
-
-    path1 = [(33.665, -116.235), (33.666, -116.256),
-             (33.667, -116.250), (33.668, -116.229)]
-
-    path2 = ((33.659, -116.243), (33.660, -116.244),
-             (33.649, -116.250), (33.644, -116.239))
-
-    path3 = ([33.688, -116.243], [33.680, -116.244],
-             [33.682, -116.250], [33.690, -116.239])
-
-    path4 = [[33.690, -116.243], [33.691, -116.244],
-             [33.692, -116.250], [33.693, -116.239]]
-
 
     pokemons = [
         [33.678, -116.243],
         [33.679, -116.244], 
         [33.680, -116.250],
         [33.681, -116.239],
-        [33.678, -116.243]
+        [33.678, -116.289]
     ]
 
     # polyline = {}
@@ -205,22 +185,36 @@ def mapview():
              'lng': pokemon[1] })
 
 
-    # plinemap = Map(
-    #     identifier="fullmap",
-    #     style=(
-    #      "height:100%;"
-    #      "width:100%;"
-    #      "top:0;"
-    #      "left:0;"
-    #      "position:absolute;"
-    #      "z-index:200;"
-    #     ),
-    #     lat=43.6532,
-    #     lng=79.3832,
-    #     markers=pokemarkers,
-    #     zoom="10",
-    #     polylines=[polyline, path1]
-    # )
+    polyline = {
+        'stroke_color': '#0AB0DE',
+        'stroke_opacity': 1.0,
+        'stroke_weight': 3,
+    }
+
+
+    directions_url = 'https://maps.googleapis.com/maps/api/directions/json'
+    params = {}
+    # params['origin'] = 'Disneyland'
+    params['origin'] = coord_to_str(pokemons[0])
+    params['destination'] = coord_to_str(pokemons[len(pokemons) - 1])
+    params['waypoints'] = waypoints_to_str(pokemons[1:len(pokemons) - 1])
+    params['key'] = API_KEY
+    r = requests.get(directions_url, params=params, verify=False)
+    json = r.json()
+    # print("DIRECTIONS", json)
+    print("DIRECTIONS")
+    print(json)
+    print(json['routes'][0]['overview_polyline']['points'])
+    overview_polyline = pl.decode(json['routes'][0]['overview_polyline']['points'])
+    print(overview_polyline)
+
+    optimal_path = []
+    for coord in overview_polyline:
+        optimal_path.append({'lat':coord[0] ,'lng':coord[1]})
+    # print(len(json['routes'][0]['legs']))
+
+    polyline['path'] = optimal_path
+
 
 
     plinemap = Map(
@@ -228,7 +222,7 @@ def mapview():
         lat=33.678,
         lng=-116.243,
         markers=pokemarkers,
-        polylines=[polyline, path1, path2, path3, path4]
+        polylines=[polyline]
     )
 
     polygon = {
@@ -245,17 +239,18 @@ def mapview():
     }
 
 
-    directions_url = 'https://maps.googleapis.com/maps/api/directions/json'
-    params = {}
-    # params['origin'] = 'Disneyland'
-    params['origin'] = coord_to_str(pokemons[0])
-    params['destination'] = coord_to_str(pokemons[0])
-    params['waypoints'] = waypoints_to_str(pokemons[1:len(pokemons)])
-    params['key'] = API_KEY
-    r = requests.get(directions_url, params=params, verify=False)
-    json = r.json()
-    print("DIRECTIONS", json)
 
+    path1 = [(33.665, -116.235), (33.666, -116.256),
+             (33.667, -116.250), (33.668, -116.229)]
+
+    path2 = ((33.659, -116.243), (33.660, -116.244),
+             (33.649, -116.250), (33.644, -116.239))
+
+    path3 = ([33.688, -116.243], [33.680, -116.244],
+             [33.682, -116.250], [33.690, -116.239])
+
+    path4 = [[33.690, -116.243], [33.691, -116.244],
+             [33.692, -116.250], [33.693, -116.239]]
 
 
     pgonmap = Map(
