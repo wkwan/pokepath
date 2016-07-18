@@ -90,6 +90,14 @@ def mapview():
 
     plinemap = Map(
         identifier="plinemap",
+        style=(
+            "height:100%;"
+            "width:100%;"
+            "top:0;"
+            "left:0;"
+            "position:absolute;"
+            "z-index:200;"
+        ),
         lat=33.678,
         lng=-116.243,
         markers=pokemarkers,
