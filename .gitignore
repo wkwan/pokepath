@@ -1,1 +1,47 @@
+<<<<<<< HEAD
 *.pyc
+=======
+*.py[cod]
+*.cfg
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+.email_password.txt
+.db_password.txt
+local_settings.py
+# Translations
+*.mo
+
+*.nja
+
+media/*
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+>>>>>>> 402c7a18b78cb6fcf3d5041edc85ea3c519e8522
